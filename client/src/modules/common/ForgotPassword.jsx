@@ -1,18 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import Navbar from './Navbar';
 import { useToast } from './Toast';
-import {
-  Container,
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Card,
-  CardContent,
-  InputAdornment
-} from '@mui/material';
-import { Email } from '@mui/icons-material';
+import PageTransition from './PageTransition';
+import { Email, ArrowBack } from '@mui/icons-material';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -32,130 +24,105 @@ const ForgotPassword = () => {
   };
 
   return (
-    <>
+    <PageTransition>
       <Navbar />
-      <div className="content-wrapper d-flex align-items-center justify-content-center py-5">
-        <Container maxWidth="sm">
-          <Card 
-            sx={{ 
-              borderRadius: 'var(--radius-lg)', 
-              boxShadow: 'var(--shadow-lg)',
-              border: '1px solid var(--border-color)',
-              overflow: 'hidden'
+      <div 
+        className="d-flex align-items-center justify-content-center"
+        style={{
+          minHeight: 'calc(100vh - 64px)',
+          backgroundColor: 'var(--bg-primary)',
+          padding: '40px 16px'
+        }}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          className="w-100"
+          style={{ maxWidth: '420px' }}
+        >
+          <div 
+            style={{
+              backgroundColor: 'var(--bg-secondary)',
+              border: '1px solid var(--border)',
+              borderRadius: '24px',
+              padding: '40px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.6)'
             }}
           >
-            <Box 
-              sx={{ 
-                bgcolor: 'var(--primary-color)', 
-                color: 'white', 
-                py: 3, 
-                px: 4, 
-                textAlign: 'center' 
-              }}
-            >
-              <Typography variant="h5" component="h2" sx={{ fontWeight: '800', fontFamily: 'Manrope' }}>
+            {/* Header */}
+            <div className="text-center mb-4">
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em', margin: '0 0 8px 0' }}>
                 Reset Password
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mt: 1 }}>
+              </h2>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
                 Provide your email to receive a recovery link
-              </Typography>
-            </Box>
+              </p>
+            </div>
             
-            <CardContent sx={{ p: 4 }}>
-              {!submitted ? (
-                <form onSubmit={handleSubmit}>
-                  <Box sx={{ mb: 3 }}>
-                    <TextField
-                      fullWidth
-                      label="Email Address"
+            {!submitted ? (
+              <form onSubmit={handleSubmit}>
+                {/* Email Address */}
+                <div className="mb-4">
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px', display: 'block', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                    Email Address
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <Email style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '18px' }} />
+                    <input 
                       type="email"
+                      required
+                      placeholder="email@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      variant="outlined"
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Email sx={{ color: 'var(--text-muted)' }} />
-                          </InputAdornment>
-                        ),
-                      }}
+                      className="form-control"
+                      style={{ paddingLeft: '48px' }}
                     />
-                  </Box>
+                  </div>
+                </div>
 
-                  <Button
-                    fullWidth
-                    type="submit"
-                    variant="contained"
-                    sx={{
-                      bgcolor: 'var(--primary-color)',
-                      color: 'white',
-                      py: 1.5,
-                      borderRadius: 'var(--radius-sm)',
-                      fontWeight: '600',
-                      fontFamily: 'Manrope',
-                      textTransform: 'none',
-                      fontSize: '1rem',
-                      boxShadow: 'none',
-                      '&:hover': {
-                        bgcolor: 'var(--primary-light)',
-                        boxShadow: 'none'
-                      }
-                    }}
-                  >
-                    Send Reset Link
-                  </Button>
-                </form>
-              ) : (
-                <Box sx={{ textAlign: 'center', py: 2 }}>
-                  <Typography variant="body1" sx={{ color: 'var(--text-main)', mb: 3, fontWeight: '500' }}>
-                    A simulated password reset email has been sent to <strong>{email}</strong>.
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'var(--text-muted)', mb: 3 }}>
-                    In a production environment, this would contain a secure token link to reset your password.
-                  </Typography>
-                  <Button
-                    component={Link}
-                    to="/login"
-                    variant="outlined"
-                    sx={{
-                      borderColor: 'var(--primary-color)',
-                      color: 'var(--primary-color)',
-                      fontWeight: '600',
-                      textTransform: 'none',
-                      px: 4,
-                      '&:hover': {
-                        borderColor: 'var(--primary-light)',
-                        bgcolor: 'rgba(15, 23, 42, 0.04)'
-                      }
-                    }}
-                  >
-                    Return to Sign In
-                  </Button>
-                </Box>
-              )}
+                <button
+                  type="submit"
+                  className="btn-househunt-primary w-100 py-3"
+                  style={{ borderRadius: '8px' }}
+                >
+                  Send Reset Link
+                </button>
+              </form>
+            ) : (
+              <div className="text-center">
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-primary)', marginBottom: '24px', lineHeight: '1.6' }}>
+                  A simulated password reset email has been sent to <strong style={{ color: 'var(--accent)' }}>{email}</strong>.
+                </p>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '32px', lineHeight: '1.5' }}>
+                  In a production environment, this would contain a secure token link to reset your password.
+                </p>
+                <Link
+                  to="/login"
+                  className="btn-househunt-outline w-100 py-3"
+                  style={{ borderRadius: '8px' }}
+                >
+                  <ArrowBack style={{ fontSize: '16px', marginRight: '6px' }} />
+                  Return to Sign In
+                </Link>
+              </div>
+            )}
 
-              {!submitted && (
-                <Box sx={{ textAlign: 'center', mt: 4 }}>
-                  <Typography variant="body2" sx={{ color: 'var(--text-muted)' }}>
-                    Remember your password?{' '}
-                    <Link 
-                      to="/login" 
-                      style={{ 
-                        color: 'var(--accent-color)', 
-                        fontWeight: '600', 
-                        textDecoration: 'none' 
-                      }}
-                    >
-                      Sign In
-                    </Link>
-                  </Typography>
-                </Box>
-              )}
-            </CardContent>
-          </Card>
-        </Container>
+            {!submitted && (
+              <div className="text-center mt-4" style={{ fontSize: '0.8rem' }}>
+                <Link 
+                  to="/login" 
+                  className="hover-underline-link"
+                  style={{ fontWeight: 600 }}
+                >
+                  Back to Sign In
+                </Link>
+              </div>
+            )}
+          </div>
+        </motion.div>
       </div>
-    </>
+    </PageTransition>
   );
 };
 

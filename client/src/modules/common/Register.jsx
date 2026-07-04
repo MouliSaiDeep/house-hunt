@@ -1,21 +1,20 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import Navbar from './Navbar';
 import { useToast } from './Toast';
+import PageTransition from './PageTransition';
 import api from '../../utils/api';
-import {
-  Container,
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Card,
-  CardContent,
-  CircularProgress,
-  MenuItem,
-  InputAdornment
-} from '@mui/material';
-import { Person, Email, Phone, Lock, LocationOn, PhotoCamera } from '@mui/icons-material';
+import { 
+  Person, 
+  Email, 
+  Phone, 
+  Lock, 
+  LocationOn, 
+  PhotoCamera,
+  Google,
+  GitHub
+} from '@mui/icons-material';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -28,6 +27,7 @@ const Register = () => {
   });
   const [profileImage, setProfileImage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [shake, setShake] = useState(false);
   
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -40,12 +40,18 @@ const Register = () => {
     setProfileImage(e.target.files[0]);
   };
 
+  const triggerShake = () => {
+    setShake(true);
+    setTimeout(() => setShake(false), 300);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { Name, Email, Phone, Password, UserType } = formData;
     
     if (!Name || !Email || !Phone || !Password || !UserType) {
       showToast('Please fill in all required fields', 'error');
+      triggerShake();
       return;
     }
 
@@ -86,231 +92,242 @@ const Register = () => {
       console.error(error);
       const errMsg = error.response?.data?.message || 'Registration failed. Please try again.';
       showToast(errMsg, 'error');
+      triggerShake();
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <>
+    <PageTransition>
       <Navbar />
-      <div className="content-wrapper d-flex align-items-center justify-content-center py-5">
-        <Container maxWidth="sm">
-          <Card 
-            sx={{ 
-              borderRadius: 'var(--radius-lg)', 
-              boxShadow: 'var(--shadow-lg)',
-              border: '1px solid var(--border-color)',
-              overflow: 'hidden'
+      <div 
+        className="d-flex align-items-center justify-content-center"
+        style={{
+          minHeight: 'calc(100vh - 64px)',
+          backgroundColor: 'var(--bg-primary)',
+          padding: '40px 16px'
+        }}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          className={`w-100 ${shake ? 'animate-shake' : ''}`}
+          style={{ maxWidth: '460px' }}
+        >
+          <div 
+            style={{
+              backgroundColor: 'var(--bg-secondary)',
+              border: '1px solid var(--border)',
+              borderRadius: '24px',
+              padding: '40px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.6)'
             }}
           >
-            <Box 
-              sx={{ 
-                bgcolor: 'var(--primary-color)', 
-                color: 'white', 
-                py: 3, 
-                px: 4, 
-                textAlign: 'center' 
-              }}
-            >
-              <Typography variant="h5" component="h2" sx={{ fontWeight: '800', fontFamily: 'Manrope' }}>
-                Join HouseHunt
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mt: 1 }}>
-                Create an account to browse homes or host rentals
-              </Typography>
-            </Box>
+            {/* Header */}
+            <div className="text-center mb-4">
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em', margin: '0 0 8px 0' }}>
+                Create Account
+              </h2>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
+                Join HouseHunt as a renter or property owner
+              </p>
+            </div>
             
-            <CardContent sx={{ p: 4 }}>
-              <form onSubmit={handleSubmit}>
-                <Box sx={{ mb: 2.5 }}>
-                  <TextField
-                    fullWidth
-                    label="Full Name *"
+            <form onSubmit={handleSubmit}>
+              {/* Full Name */}
+              <div className="mb-3">
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px', display: 'block', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                  Full Name *
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Person style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '18px' }} />
+                  <input 
+                    type="text"
                     name="Name"
+                    required
+                    placeholder="John Doe"
                     value={formData.Name}
                     onChange={handleChange}
                     disabled={loading}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Person sx={{ color: 'var(--text-muted)' }} />
-                        </InputAdornment>
-                      ),
-                    }}
+                    className="form-control"
+                    style={{ paddingLeft: '48px' }}
                   />
-                </Box>
-                
-                <Box sx={{ mb: 2.5 }}>
-                  <TextField
-                    fullWidth
-                    label="Email Address *"
-                    name="Email"
+                </div>
+              </div>
+
+              {/* Email Address */}
+              <div className="mb-3">
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px', display: 'block', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                  Email Address *
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Email style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '18px' }} />
+                  <input 
                     type="email"
+                    name="Email"
+                    required
+                    placeholder="email@example.com"
                     value={formData.Email}
                     onChange={handleChange}
                     disabled={loading}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Email sx={{ color: 'var(--text-muted)' }} />
-                        </InputAdornment>
-                      ),
-                    }}
+                    className="form-control"
+                    style={{ paddingLeft: '48px' }}
                   />
-                </Box>
+                </div>
+              </div>
 
-                <Box sx={{ mb: 2.5 }}>
-                  <TextField
-                    fullWidth
-                    label="Phone Number *"
+              {/* Phone Number */}
+              <div className="mb-3">
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px', display: 'block', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                  Phone Number *
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Phone style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '18px' }} />
+                  <input 
+                    type="tel"
                     name="Phone"
+                    required
+                    placeholder="+1 (555) 000-0000"
                     value={formData.Phone}
                     onChange={handleChange}
                     disabled={loading}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Phone sx={{ color: 'var(--text-muted)' }} />
-                        </InputAdornment>
-                      ),
-                    }}
+                    className="form-control"
+                    style={{ paddingLeft: '48px' }}
                   />
-                </Box>
+                </div>
+              </div>
 
-                <Box sx={{ mb: 2.5 }}>
-                  <TextField
-                    fullWidth
-                    label="Password *"
-                    name="Password"
+              {/* Password */}
+              <div className="mb-3">
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px', display: 'block', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                  Password *
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Lock style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '18px' }} />
+                  <input 
                     type="password"
+                    name="Password"
+                    required
+                    placeholder="••••••••"
                     value={formData.Password}
                     onChange={handleChange}
                     disabled={loading}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Lock sx={{ color: 'var(--text-muted)' }} />
-                        </InputAdornment>
-                      ),
-                    }}
+                    className="form-control"
+                    style={{ paddingLeft: '48px' }}
                   />
-                </Box>
+                </div>
+              </div>
 
-                <Box sx={{ mb: 2.5 }}>
-                  <TextField
-                    fullWidth
-                    select
-                    label="Account Type *"
-                    name="UserType"
-                    value={formData.UserType}
-                    onChange={handleChange}
-                    disabled={loading}
-                  >
-                    <MenuItem value="Tenant">Renter / Tenant</MenuItem>
-                    <MenuItem value="Owner">Property Owner / Landlord</MenuItem>
-                  </TextField>
-                </Box>
+              {/* Account Type */}
+              <div className="mb-3">
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px', display: 'block', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                  Account Type *
+                </label>
+                <select
+                  name="UserType"
+                  value={formData.UserType}
+                  onChange={handleChange}
+                  disabled={loading}
+                  className="form-select"
+                >
+                  <option value="Tenant">Renter / Tenant</option>
+                  <option value="Owner">Property Owner / Landlord</option>
+                </select>
+              </div>
 
-                {formData.UserType === 'Owner' && (
-                  <Box className="alert alert-warning py-2 mb-3" sx={{ fontSize: '0.85rem' }}>
-                    <strong>Note for Landlords:</strong> Your profile requires approval from an Admin before you can publish properties.
-                  </Box>
-                )}
+              {formData.UserType === 'Owner' && (
+                <div 
+                  className="p-3 mb-3 rounded"
+                  style={{
+                    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+                    border: '1px solid rgba(245, 158, 11, 0.2)',
+                    color: 'var(--warning)',
+                    fontSize: '0.75rem',
+                    lineHeight: '1.4'
+                  }}
+                >
+                  <strong>Notice for Landlords:</strong> Your profile requires approval from an Admin before you can publish properties.
+                </div>
+              )}
 
-                <Box sx={{ mb: 2.5 }}>
-                  <TextField
-                    fullWidth
-                    label="Current Location"
+              {/* Location */}
+              <div className="mb-3">
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px', display: 'block', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                  Current Location
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <LocationOn style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '18px' }} />
+                  <input 
+                    type="text"
                     name="CurrentLocation"
+                    placeholder="City, State"
                     value={formData.CurrentLocation}
                     onChange={handleChange}
                     disabled={loading}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LocationOn sx={{ color: 'var(--text-muted)' }} />
-                        </InputAdornment>
-                      ),
-                    }}
+                    className="form-control"
+                    style={{ paddingLeft: '48px' }}
                   />
-                </Box>
+                </div>
+              </div>
 
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="body2" sx={{ color: 'var(--text-muted)', mb: 1, fontWeight: '500' }}>
-                    Profile Picture
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    component="label"
-                    fullWidth
-                    disabled={loading}
-                    startIcon={<PhotoCamera />}
-                    sx={{
-                      borderColor: 'var(--border-color)',
-                      color: 'var(--text-main)',
-                      py: 1.25,
-                      textTransform: 'none',
-                      '&:hover': {
-                        borderColor: 'var(--accent-color)'
-                      }
+              {/* Profile Image upload button */}
+              <div className="mb-4">
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px', display: 'block', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                  Profile Picture
+                </label>
+                <div className="w-100">
+                  <label 
+                    className="btn-househunt-outline w-100 py-3"
+                    style={{
+                      cursor: 'pointer',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      fontSize: '0.85rem'
                     }}
                   >
-                    {profileImage ? profileImage.name : 'Upload Profile Image'}
-                    <input
-                      type="file"
-                      hidden
+                    <PhotoCamera style={{ fontSize: '18px' }} />
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '280px' }}>
+                      {profileImage ? profileImage.name : 'Upload profile picture'}
+                    </span>
+                    <input 
+                      type="file" 
                       accept="image/*"
                       onChange={handleFileChange}
+                      style={{ display: 'none' }}
                     />
-                  </Button>
-                </Box>
+                  </label>
+                </div>
+              </div>
 
-                <Button
-                  fullWidth
-                  type="submit"
-                  variant="contained"
-                  disabled={loading}
-                  sx={{
-                    bgcolor: 'var(--primary-color)',
-                    color: 'white',
-                    py: 1.5,
-                    borderRadius: 'var(--radius-sm)',
-                    fontWeight: '600',
-                    fontFamily: 'Manrope',
-                    textTransform: 'none',
-                    fontSize: '1rem',
-                    boxShadow: 'none',
-                    '&:hover': {
-                      bgcolor: 'var(--primary-light)',
-                      boxShadow: 'none'
-                    }
-                  }}
-                >
-                  {loading ? <CircularProgress size={24} color="inherit" /> : 'Register'}
-                </Button>
-              </form>
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-househunt-primary w-100 py-3"
+                style={{ borderRadius: '8px' }}
+              >
+                {loading ? 'Creating Account...' : 'Register'}
+              </button>
+            </form>
 
-              <Box sx={{ textAlign: 'center', mt: 4 }}>
-                <Typography variant="body2" sx={{ color: 'var(--text-muted)' }}>
-                  Already have an account?{' '}
-                  <Link 
-                    to="/login" 
-                    style={{ 
-                      color: 'var(--accent-color)', 
-                      fontWeight: '600', 
-                      textDecoration: 'none' 
-                    }}
-                  >
-                    Sign In
-                  </Link>
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Container>
+            <div className="text-center mt-4" style={{ fontSize: '0.8rem' }}>
+              <span style={{ color: 'var(--text-secondary)' }}>Already have an account? </span>
+              <Link 
+                to="/login" 
+                className="hover-underline-link"
+                style={{ color: 'var(--accent)', fontWeight: 600 }}
+              >
+                Sign In
+              </Link>
+            </div>
+          </div>
+        </motion.div>
       </div>
-    </>
+    </PageTransition>
   );
 };
 
