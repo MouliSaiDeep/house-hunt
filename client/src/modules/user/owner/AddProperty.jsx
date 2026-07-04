@@ -3,23 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navbar from '../../common/Navbar';
 import { useToast } from '../../common/Toast';
 import api from '../../../utils/api';
-import {
-  Container,
-  Card,
-  CardContent,
-  Typography,
-  TextField,
-  MenuItem,
-  Button,
-  FormControl,
-  FormLabel,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
-  Grid,
-  Box,
-  CircularProgress
-} from '@mui/material';
 import { PhotoCamera, ArrowBack } from '@mui/icons-material';
 
 const AddProperty = () => {
@@ -47,7 +30,14 @@ const AddProperty = () => {
 
   const { showToast } = useToast();
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const user = (() => {
+    try {
+      const u = localStorage.getItem('user');
+      return u && u !== 'undefined' ? JSON.parse(u) : {};
+    } catch (e) {
+      return {};
+    }
+  })();
 
   useEffect(() => {
     if (!user.isApproved) {
@@ -88,7 +78,6 @@ const AddProperty = () => {
         'pool': prop.Amenities.includes('pool'),
         'garage': prop.Amenities.includes('garage')
       });
-
     } catch (error) {
       console.error(error);
       showToast('Error loading property details for editing', 'error');
@@ -101,8 +90,8 @@ const AddProperty = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleAmenityChange = (e) => {
-    setAmenities({ ...amenities, [e.target.name]: e.target.checked });
+  const handleAmenityChange = (name) => {
+    setAmenities(prev => ({ ...prev, [name]: !prev[name] }));
   };
 
   const handleFileChange = (e) => {
@@ -165,9 +154,9 @@ const AddProperty = () => {
     return (
       <>
         <Navbar />
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress color="primary" />
-        </Box>
+        <div style={{ backgroundColor: 'var(--bg-primary)', minHeight: 'calc(100vh - 64px)', padding: '40px 0' }} className="text-center">
+          <div className="spinner-border text-success" role="status" />
+        </div>
       </>
     );
   }
@@ -175,220 +164,199 @@ const AddProperty = () => {
   return (
     <>
       <Navbar />
-      <Container sx={{ py: 5 }}>
-        <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Button 
-            onClick={() => navigate('/owner/properties')}
-            variant="text" 
-            startIcon={<ArrowBack />} 
-            sx={{ color: 'var(--text-main)', textTransform: 'none' }}
-          >
-            Back to Listings
-          </Button>
-        </Box>
+      <div style={{ backgroundColor: 'var(--bg-primary)', minHeight: 'calc(100vh - 64px)', padding: '40px 0' }}>
+        <div className="container">
+          <div className="mb-4">
+            <button 
+              onClick={() => navigate('/owner/properties')}
+              className="btn btn-link text-white text-decoration-none d-flex align-items-center gap-2 p-0"
+              style={{ fontSize: '0.85rem' }}
+            >
+              <ArrowBack style={{ fontSize: '18px' }} />
+              Back to Listings
+            </button>
+          </div>
 
-        <Container maxWidth="md">
-          <Card sx={{ borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
-            <Box sx={{ bgcolor: 'var(--primary-color)', color: 'white', py: 3, px: 4 }}>
-              <Typography variant="h5" component="h2" sx={{ fontWeight: '800', fontFamily: 'Manrope' }}>
-                {editId ? 'Edit Property Listing' : 'Add New Rental Property'}
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mt: 0.5 }}>
-                Provide details about your property to find renters.
-              </Typography>
-            </Box>
+          <div className="mx-auto" style={{ maxWidth: '720px' }}>
+            <div 
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                border: '1px solid var(--border)',
+                borderRadius: '24px',
+                padding: '40px',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.6)'
+              }}
+            >
+              <div className="mb-4">
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.02em', margin: '0 0 6px 0' }}>
+                  {editId ? 'Edit Property Listing' : 'Add Rental Property'}
+                </h2>
+                <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.8rem' }}>
+                  Provide details about your property to find renters.
+                </p>
+              </div>
 
-            <CardContent sx={{ p: 4 }}>
               <form onSubmit={handleSubmit}>
-                <Grid container spacing={3}>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Property Title *"
+                <div className="row g-3">
+                  {/* Title */}
+                  <div className="col-12">
+                    <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Property Title *</label>
+                    <input 
+                      type="text" 
                       name="Title"
+                      required
+                      placeholder="e.g. Modern 2 BHK Apartment in Downtown"
                       value={formData.Title}
                       onChange={handleChange}
                       disabled={loading}
-                      placeholder="e.g. Modern 2 BHK Apartment in Downtown"
+                      className="form-control"
                     />
-                  </Grid>
+                  </div>
 
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={4}
-                      label="Detailed Description *"
+                  {/* Description */}
+                  <div className="col-12">
+                    <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Detailed Description *</label>
+                    <textarea 
                       name="Description"
+                      required
+                      rows="4"
+                      placeholder="Write about the rooms, local context, utilities, distance to transport, etc."
                       value={formData.Description}
                       onChange={handleChange}
                       disabled={loading}
-                      placeholder="Write about the rooms, local context, utilities, distance to transport, etc."
+                      className="form-control"
                     />
-                  </Grid>
+                  </div>
 
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Location / Area *"
+                  {/* Location */}
+                  <div className="col-12 col-sm-6">
+                    <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Location / Area *</label>
+                    <input 
+                      type="text" 
                       name="Location"
+                      required
+                      placeholder="e.g. Jubilee Hills, Hyderabad"
                       value={formData.Location}
                       onChange={handleChange}
                       disabled={loading}
-                      placeholder="e.g. Jubilee Hills, Hyderabad"
+                      className="form-control"
                     />
-                  </Grid>
+                  </div>
 
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      type="number"
-                      label="Monthly Rent Amount ($) *"
+                  {/* Rent */}
+                  <div className="col-12 col-sm-6">
+                    <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Monthly Rent Amount ($) *</label>
+                    <input 
+                      type="number" 
                       name="RentAmount"
+                      required
+                      placeholder="e.g. 1200"
                       value={formData.RentAmount}
                       onChange={handleChange}
                       disabled={loading}
-                      placeholder="e.g. 1200"
+                      className="form-control"
                     />
-                  </Grid>
+                  </div>
 
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      select
-                      label="Property Type *"
+                  {/* Type */}
+                  <div className="col-12 col-sm-6">
+                    <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Property Type *</label>
+                    <select 
                       name="PropertyType"
                       value={formData.PropertyType}
                       onChange={handleChange}
                       disabled={loading}
+                      className="form-select"
                     >
-                      <MenuItem value="Apartment">Apartment</MenuItem>
-                      <MenuItem value="House">House</MenuItem>
-                      <MenuItem value="Studio">Studio</MenuItem>
-                    </TextField>
-                  </Grid>
+                      <option value="Apartment">Apartment</option>
+                      <option value="House">House</option>
+                      <option value="Studio">Studio</option>
+                    </select>
+                  </div>
 
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      select
-                      label="Furnishing Status *"
+                  {/* Furnishing */}
+                  <div className="col-12 col-sm-6">
+                    <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Furnishing Status *</label>
+                    <select 
                       name="FurnishingStatus"
                       value={formData.FurnishingStatus}
                       onChange={handleChange}
                       disabled={loading}
+                      className="form-select"
                     >
-                      <MenuItem value="Furnished">Furnished</MenuItem>
-                      <MenuItem value="Semi-Furnished">Semi-Furnished</MenuItem>
-                      <MenuItem value="Unfurnished">Unfurnished</MenuItem>
-                    </TextField>
-                  </Grid>
+                      <option value="Furnished">Furnished</option>
+                      <option value="Semi-Furnished">Semi-Furnished</option>
+                      <option value="Unfurnished">Unfurnished</option>
+                    </select>
+                  </div>
 
-                  <Grid item xs={12}>
-                    <FormControl component="fieldset" variant="standard">
-                      <FormLabel component="legend" sx={{ fontWeight: '600', color: 'var(--text-main)', fontSize: '0.9rem', mb: 1 }}>
-                        Amenities Included
-                      </FormLabel>
-                      <FormGroup row>
-                        <FormControlLabel
-                          control={
-                            <Checkbox 
-                              checked={amenities['pet-friendly']} 
-                              onChange={handleAmenityChange} 
-                              name="pet-friendly" 
-                            />
-                          }
-                          label="Pet-friendly"
-                        />
-                        <FormControlLabel
-                          control={
-                            <Checkbox 
-                              checked={amenities['pool']} 
-                              onChange={handleAmenityChange} 
-                              name="pool" 
-                            />
-                          }
-                          label="Swimming Pool"
-                        />
-                        <FormControlLabel
-                          control={
-                            <Checkbox 
-                              checked={amenities['garage']} 
-                              onChange={handleAmenityChange} 
-                              name="garage" 
-                            />
-                          }
-                          label="Garage"
-                        />
-                      </FormGroup>
-                    </FormControl>
-                  </Grid>
+                  {/* Amenities */}
+                  <div className="col-12">
+                    <label className="form-label d-block mb-2" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Amenities Included</label>
+                    <div className="d-flex gap-3 flex-wrap">
+                      {Object.keys(amenities).map(key => (
+                        <label key={key} className="d-flex align-items-center gap-2" style={{ cursor: 'pointer', fontSize: '0.85rem' }}>
+                          <input 
+                            type="checkbox"
+                            checked={amenities[key]}
+                            onChange={() => handleAmenityChange(key)}
+                            style={{ accentColor: 'var(--accent)' }}
+                          />
+                          <span style={{ textTransform: 'capitalize' }}>{key}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
 
-                  <Grid item xs={12}>
-                    <Typography variant="body2" sx={{ color: 'var(--text-muted)', mb: 1, fontWeight: '500' }}>
-                      Property Images {editId ? '(Select new files to add images)' : '*'}
-                    </Typography>
-                    <Button
-                      variant="outlined"
-                      component="label"
-                      fullWidth
-                      disabled={loading}
-                      startIcon={<PhotoCamera />}
-                      sx={{
-                        borderColor: 'var(--border-color)',
-                        color: 'var(--text-main)',
-                        py: 1.5,
-                        textTransform: 'none',
-                        '&:hover': {
-                          borderColor: 'var(--accent-color)'
-                        }
+                  {/* File Upload */}
+                  <div className="col-12">
+                    <label className="form-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                      Property Images {editId ? '(Select new files to replace images)' : '*'}
+                    </label>
+                    <label 
+                      className="btn-househunt-outline w-100 py-3"
+                      style={{
+                        cursor: 'pointer',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        fontSize: '0.85rem'
                       }}
                     >
-                      {images.length > 0 
-                        ? `${images.length} file(s) selected` 
-                        : 'Upload Property Images'
-                      }
-                      <input
-                        type="file"
-                        hidden
+                      <PhotoCamera style={{ fontSize: '18px' }} />
+                      <span>
+                        {images.length > 0 
+                          ? `${images.length} file(s) selected` 
+                          : 'Upload Property Images'
+                        }
+                      </span>
+                      <input 
+                        type="file" 
                         multiple
                         accept="image/*"
                         onChange={handleFileChange}
+                        style={{ display: 'none' }}
                       />
-                    </Button>
-                  </Grid>
+                    </label>
+                  </div>
 
-                  <Grid item xs={12} sx={{ mt: 2 }}>
-                    <Button
-                      fullWidth
+                  <div className="col-12 mt-4">
+                    <button
                       type="submit"
-                      variant="contained"
                       disabled={loading}
-                      sx={{
-                        bgcolor: 'var(--primary-color)',
-                        color: 'white',
-                        py: 1.5,
-                        borderRadius: 'var(--radius-sm)',
-                        fontWeight: '600',
-                        fontFamily: 'Manrope',
-                        textTransform: 'none',
-                        fontSize: '1rem',
-                        boxShadow: 'none',
-                        '&:hover': {
-                          bgcolor: 'var(--primary-light)',
-                          boxShadow: 'none'
-                        }
-                      }}
+                      className="btn-househunt-primary w-100 py-3"
                     >
-                      {loading ? <CircularProgress size={24} color="inherit" /> : editId ? 'Save Changes' : 'List Property'}
-                    </Button>
-                  </Grid>
-                </Grid>
+                      {loading ? 'Submitting...' : editId ? 'Save Changes' : 'List Property'}
+                    </button>
+                  </div>
+                </div>
               </form>
-            </CardContent>
-          </Card>
-        </Container>
-      </Container>
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 };

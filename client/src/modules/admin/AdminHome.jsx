@@ -3,16 +3,6 @@ import { Link } from 'react-router-dom';
 import Navbar from '../common/Navbar';
 import { useToast } from '../common/Toast';
 import api from '../../utils/api';
-import {
-  Container,
-  Grid,
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Button,
-  CircularProgress
-} from '@mui/material';
 import { People, HomeWork, CalendarMonth, Shield } from '@mui/icons-material';
 
 const AdminHome = () => {
@@ -47,138 +37,112 @@ const AdminHome = () => {
   return (
     <>
       <Navbar />
-      <Container sx={{ py: 5 }}>
-        <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Shield sx={{ fontSize: 36, color: 'var(--accent-color)' }} />
-          <div>
-            <Typography variant="h4" component="h1" sx={{ fontWeight: '800' }}>
-              Admin Moderation Center
-            </Typography>
-            <Typography variant="body1" sx={{ color: 'var(--text-muted)' }}>
-              Monitor system listings, moderate user accounts, and approve landlords.
-            </Typography>
+      <div style={{ backgroundColor: 'var(--bg-primary)', minHeight: 'calc(100vh - 64px)', padding: '40px 0' }}>
+        <div className="container">
+          {/* Header */}
+          <div className="mb-5 d-flex align-items-center gap-3">
+            <Shield style={{ fontSize: '36px', color: 'var(--accent)' }} />
+            <div>
+              <h1 style={{ fontWeight: 700, fontSize: '2rem', letterSpacing: '-0.02em', margin: '0 0 6px 0' }}>
+                Admin Moderation Center
+              </h1>
+              <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.85rem' }}>
+                Monitor system listings, moderate user accounts, and approve landlords.
+              </p>
+            </div>
           </div>
-        </Box>
 
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-            <CircularProgress color="primary" />
-          </Box>
-        ) : (
-          <Grid container spacing={4}>
-            {/* Stats Cards */}
-            <Grid item xs={12} sm={4}>
-              <Card sx={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-sm)' }}>
-                <CardContent sx={{ p: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          {loading ? (
+            <div className="text-center py-5">
+              <div className="spinner-border text-success" role="status" />
+            </div>
+          ) : (
+            <div className="row g-4">
+              {/* Stats Cards */}
+              <div className="col-12 col-md-4">
+                <div className="p-4 d-flex justify-content-between align-items-center househunt-card" style={{ height: '100%' }}>
                   <div>
-                    <Typography variant="body2" sx={{ color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase' }}>
+                    <span className="text-muted d-block" style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       Registered Users
-                    </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: '800', mt: 1 }}>
+                    </span>
+                    <span className="d-block" style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '8px' }}>
                       {stats.totalUsers}
-                    </Typography>
+                    </span>
                   </div>
-                  <People sx={{ fontSize: 50, color: 'var(--accent-color)' }} />
-                </CardContent>
-              </Card>
-            </Grid>
+                  <People style={{ fontSize: '48px', color: 'var(--accent)' }} />
+                </div>
+              </div>
 
-            <Grid item xs={12} sm={4}>
-              <Card sx={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-sm)' }}>
-                <CardContent sx={{ p: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div className="col-12 col-md-4">
+                <div className="p-4 d-flex justify-content-between align-items-center househunt-card" style={{ height: '100%' }}>
                   <div>
-                    <Typography variant="body2" sx={{ color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase' }}>
+                    <span className="text-muted d-block" style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       Active Properties
-                    </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: '800', mt: 1 }}>
+                    </span>
+                    <span className="d-block" style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '8px' }}>
                       {stats.totalProperties}
-                    </Typography>
+                    </span>
                   </div>
-                  <HomeWork sx={{ fontSize: 50, color: 'var(--accent-color)' }} />
-                </CardContent>
-              </Card>
-            </Grid>
+                  <HomeWork style={{ fontSize: '48px', color: 'var(--accent)' }} />
+                </div>
+              </div>
 
-            <Grid item xs={12} sm={4}>
-              <Card sx={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-sm)' }}>
-                <CardContent sx={{ p: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div className="col-12 col-md-4">
+                <div className="p-4 d-flex justify-content-between align-items-center househunt-card" style={{ height: '100%' }}>
                   <div>
-                    <Typography variant="body2" sx={{ color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase' }}>
+                    <span className="text-muted d-block" style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       Total Bookings
-                    </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: '800', mt: 1 }}>
+                    </span>
+                    <span className="d-block" style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '8px' }}>
                       {stats.totalBookings}
-                    </Typography>
+                    </span>
                   </div>
-                  <CalendarMonth sx={{ fontSize: 50, color: 'var(--accent-color)' }} />
-                </CardContent>
-              </Card>
-            </Grid>
+                  <CalendarMonth style={{ fontSize: '48px', color: 'var(--accent)' }} />
+                </div>
+              </div>
 
-            {/* Quick Actions Panel */}
-            <Grid item xs={12}>
-              <Card sx={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', bgcolor: '#F8FAFC', p: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: '700', mb: 3 }}>
-                  Moderation Quick Links
-                </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                  <Button
-                    component={Link}
-                    to="/admin/users"
-                    variant="contained"
-                    sx={{
-                      bgcolor: 'var(--primary-color)',
-                      color: 'white',
-                      textTransform: 'none',
-                      fontFamily: 'Manrope',
-                      fontWeight: '600',
-                      px: 3,
-                      py: 1.25,
-                      '&:hover': { bgcolor: 'var(--primary-light)' }
-                    }}
-                  >
-                    Manage Users & Landlords
-                  </Button>
-                  <Button
-                    component={Link}
-                    to="/admin/properties"
-                    variant="outlined"
-                    sx={{
-                      borderColor: 'var(--primary-color)',
-                      color: 'var(--primary-color)',
-                      textTransform: 'none',
-                      fontFamily: 'Manrope',
-                      fontWeight: '600',
-                      px: 3,
-                      py: 1.25,
-                      '&:hover': { borderColor: 'var(--primary-light)', bgcolor: 'rgba(15, 23, 42, 0.04)' }
-                    }}
-                  >
-                    Moderate Properties
-                  </Button>
-                  <Button
-                    component={Link}
-                    to="/admin/bookings"
-                    variant="outlined"
-                    sx={{
-                      borderColor: 'var(--primary-color)',
-                      color: 'var(--primary-color)',
-                      textTransform: 'none',
-                      fontFamily: 'Manrope',
-                      fontWeight: '600',
-                      px: 3,
-                      py: 1.25,
-                      '&:hover': { borderColor: 'var(--primary-light)', bgcolor: 'rgba(15, 23, 42, 0.04)' }
-                    }}
-                  >
-                    View System Bookings
-                  </Button>
-                </Box>
-              </Card>
-            </Grid>
-          </Grid>
-        )}
-      </Container>
+              {/* Quick Actions Panel */}
+              <div className="col-12 mt-4">
+                <div 
+                  style={{
+                    backgroundColor: 'var(--bg-secondary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '16px',
+                    padding: '24px'
+                  }}
+                >
+                  <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '20px' }}>
+                    Moderation Quick Links
+                  </h2>
+                  <div className="d-flex flex-wrap gap-2">
+                    <Link
+                      to="/admin/users"
+                      className="btn-househunt-primary py-2.5 px-4"
+                      style={{ fontSize: '0.85rem' }}
+                    >
+                      Manage Users & Landlords
+                    </Link>
+                    <Link
+                      to="/admin/properties"
+                      className="btn-househunt-outline py-2.5 px-4"
+                      style={{ fontSize: '0.85rem' }}
+                    >
+                      Moderate Properties
+                    </Link>
+                    <Link
+                      to="/admin/bookings"
+                      className="btn-househunt-outline py-2.5 px-4"
+                      style={{ fontSize: '0.85rem' }}
+                    >
+                      View System Bookings
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </>
   );
 };

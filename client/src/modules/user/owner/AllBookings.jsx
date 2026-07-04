@@ -2,21 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../../common/Navbar';
 import { useToast } from '../../common/Toast';
 import api from '../../../utils/api';
-import {
-  Container,
-  Box,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
-  Chip,
-  CircularProgress
-} from '@mui/material';
 import { CheckCircle, Cancel } from '@mui/icons-material';
 import moment from 'moment';
 
@@ -49,7 +34,6 @@ const AllBookings = () => {
     try {
       await api.put(`/owner/bookings/${id}`, { Status: status });
       showToast(`Booking inquiry successfully ${status.toLowerCase()}!`, 'success');
-      // Reload bookings
       fetchBookings();
     } catch (error) {
       console.error(error);
@@ -58,129 +42,121 @@ const AllBookings = () => {
     }
   };
 
-  const getStatusChipColor = (status) => {
-    switch (status) {
-      case 'Confirmed':
-        return 'success';
-      case 'Cancelled':
-        return 'error';
-      default:
-        return 'warning';
-    }
-  };
-
   return (
     <>
       <Navbar />
-      <Container sx={{ py: 5 }}>
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: '800' }}>
-            Rental Inquiries & Bookings
-          </Typography>
-          <Typography variant="body1" sx={{ color: 'var(--text-muted)' }}>
-            Review inquiries submitted by renters and confirm or cancel reservation requests.
-          </Typography>
-        </Box>
+      <div style={{ backgroundColor: 'var(--bg-primary)', minHeight: 'calc(100vh - 64px)', padding: '40px 0' }}>
+        <div className="container">
+          {/* Header */}
+          <div className="mb-5">
+            <h1 style={{ fontWeight: 700, fontSize: '2rem', letterSpacing: '-0.02em', margin: '0 0 6px 0' }}>
+              Rental Inquiries & Bookings
+            </h1>
+            <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.85rem' }}>
+              Review inquiries submitted by renters and confirm or cancel reservation requests.
+            </p>
+          </div>
 
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-            <CircularProgress color="primary" />
-          </Box>
-        ) : bookings.length === 0 ? (
-          <Box sx={{ p: 5, textAlign: 'center', bgcolor: 'white', border: '1px dashed var(--border-color)', borderRadius: 'var(--radius-md)' }}>
-            <Typography variant="body1" sx={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
-              No rental bookings or inquiries found for your properties.
-            </Typography>
-          </Box>
-        ) : (
-          <TableContainer component={Paper} sx={{ borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
-            <Table>
-              <TableHead sx={{ bgcolor: 'rgba(0,0,0,0.02)' }}>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: '600' }}>Property Details</TableCell>
-                  <TableCell sx={{ fontWeight: '600' }}>Tenant Details</TableCell>
-                  <TableCell sx={{ fontWeight: '600' }}>Inquiry Date</TableCell>
-                  <TableCell sx={{ fontWeight: '600' }}>Requested Stay Period</TableCell>
-                  <TableCell sx={{ fontWeight: '600' }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: '600' }}>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {bookings.map((booking) => (
-                  <TableRow key={booking._id} hover>
-                    <TableCell>
-                      <Typography variant="body2" sx={{ fontWeight: '600' }}>
-                        {booking.PropertyID?.Title || 'Deleted Property'}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {booking.PropertyID?.Location} • ${booking.PropertyID?.RentAmount}/mo
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" sx={{ fontWeight: '600' }}>
-                        {booking.TenantID?.Name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                        Email: {booking.TenantID?.Email}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                        Phone: {booking.TenantID?.Phone}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      {moment(booking.BookingDate).format('DD MMM YYYY, h:mm a')}
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" sx={{ fontWeight: '500' }}>
-                        {moment(booking.StartDate).format('DD MMM YYYY')} to
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: '500' }}>
-                        {moment(booking.EndDate).format('DD MMM YYYY')}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={booking.Status} 
-                        size="small" 
-                        color={getStatusChipColor(booking.Status)}
-                        sx={{ fontWeight: '600' }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {booking.Status === 'Pending' ? (
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                          <Button
-                            variant="contained"
-                            color="success"
-                            size="small"
-                            startIcon={<CheckCircle />}
-                            onClick={() => handleUpdateStatus(booking._id, 'Confirmed')}
-                            sx={{ textTransform: 'none', fontWeight: '600' }}
-                          >
-                            Confirm
-                          </Button>
-                          <Button
-                            variant="outlined"
-                            color="error"
-                            size="small"
-                            startIcon={<Cancel />}
-                            onClick={() => handleUpdateStatus(booking._id, 'Cancelled')}
-                            sx={{ textTransform: 'none', fontWeight: '600' }}
-                          >
-                            Cancel
-                          </Button>
-                        </Box>
-                      ) : (
-                        <Typography variant="body2" color="text.secondary">Reviewed</Typography>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
-      </Container>
+          {loading ? (
+            <div className="text-center py-5">
+              <div className="spinner-border text-success" role="status" />
+            </div>
+          ) : bookings.length === 0 ? (
+            <div className="text-center py-5 rounded" style={{ border: '1px dashed var(--border)', backgroundColor: 'var(--bg-secondary)' }}>
+              <p className="text-muted m-0 italic" style={{ fontSize: '0.85rem' }}>No rental bookings or inquiries found for your properties.</p>
+            </div>
+          ) : (
+            <div 
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                border: '1px solid var(--border)',
+                borderRadius: '16px',
+                overflow: 'hidden'
+              }}
+            >
+              <div className="table-responsive">
+                <table className="table m-0">
+                  <thead>
+                    <tr style={{ backgroundColor: 'rgba(255,255,255,0.01)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <th className="p-3 border-0">Property Details</th>
+                      <th className="p-3 border-0">Tenant Details</th>
+                      <th className="p-3 border-0">Inquiry Date</th>
+                      <th className="p-3 border-0">Requested Stay Period</th>
+                      <th className="p-3 border-0">Status</th>
+                      <th className="p-3 border-0 text-end">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bookings.map((booking) => (
+                      <tr key={booking._id} style={{ verticalAlign: 'middle' }}>
+                        <td className="p-3">
+                          <span className="d-block" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                            {booking.PropertyID?.Title || 'Deleted Property'}
+                          </span>
+                          <span className="text-muted" style={{ fontSize: '0.7rem' }}>
+                            {booking.PropertyID?.Location} • ${booking.PropertyID?.RentAmount}/mo
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <span className="d-block" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                            {booking.TenantID?.Name}
+                          </span>
+                          <span className="text-muted d-block" style={{ fontSize: '0.7rem' }}>
+                            Email: {booking.TenantID?.Email}
+                          </span>
+                          <span className="text-muted d-block" style={{ fontSize: '0.7rem' }}>
+                            Phone: {booking.TenantID?.Phone}
+                          </span>
+                        </td>
+                        <td className="p-3" style={{ fontSize: '0.85rem' }}>
+                          {moment(booking.BookingDate).format('DD MMM YYYY, h:mm a')}
+                        </td>
+                        <td className="p-3">
+                          <span className="d-block" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                            {moment(booking.StartDate).format('DD MMM YYYY')} to
+                          </span>
+                          <span className="text-muted d-block" style={{ fontSize: '0.7rem' }}>
+                            {moment(booking.EndDate).format('DD MMM YYYY')}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <span className={`status-badge ${booking.Status.toLowerCase()}`}>
+                            {booking.Status}
+                          </span>
+                        </td>
+                        <td className="p-3 text-end">
+                          {booking.Status === 'Pending' ? (
+                            <div className="d-flex gap-2 justify-content-end">
+                              <button
+                                onClick={() => handleUpdateStatus(booking._id, 'Confirmed')}
+                                className="btn btn-sm btn-success d-inline-flex align-items-center gap-1"
+                                style={{ fontSize: '0.7rem', padding: '6px 12px', fontWeight: 600 }}
+                              >
+                                <CheckCircle style={{ fontSize: '14px' }} />
+                                Confirm
+                              </button>
+                              <button
+                                onClick={() => handleUpdateStatus(booking._id, 'Cancelled')}
+                                className="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1"
+                                style={{ fontSize: '0.7rem', padding: '6px 12px', fontWeight: 600 }}
+                              >
+                                <Cancel style={{ fontSize: '14px' }} />
+                                Reject
+                              </button>
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Reviewed</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </>
   );
 };

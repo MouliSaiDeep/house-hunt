@@ -2,22 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../common/Navbar';
 import { useToast } from '../common/Toast';
 import api from '../../utils/api';
-import {
-  Container,
-  Box,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
-  Chip,
-  CircularProgress,
-  IconButton
-} from '@mui/material';
 import { Delete } from '@mui/icons-material';
 
 const AllProperty = () => {
@@ -58,97 +42,104 @@ const AllProperty = () => {
   return (
     <>
       <Navbar />
-      <Container sx={{ py: 5 }}>
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: '800' }}>
-            System Property Listings
-          </Typography>
-          <Typography variant="body1" sx={{ color: 'var(--text-muted)' }}>
-            Moderate listings and delete listings violating platform terms.
-          </Typography>
-        </Box>
+      <div style={{ backgroundColor: 'var(--bg-primary)', minHeight: 'calc(100vh - 64px)', padding: '40px 0' }}>
+        <div className="container">
+          {/* Header */}
+          <div className="mb-5">
+            <h1 style={{ fontWeight: 700, fontSize: '2rem', letterSpacing: '-0.02em', margin: '0 0 6px 0' }}>
+              System Property Listings
+            </h1>
+            <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.85rem' }}>
+              Moderate listings and delete listings violating platform terms.
+            </p>
+          </div>
 
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-            <CircularProgress color="primary" />
-          </Box>
-        ) : properties.length === 0 ? (
-          <Box sx={{ p: 5, textAlign: 'center', bgcolor: 'white', border: '1px dashed var(--border-color)', borderRadius: 'var(--radius-md)' }}>
-            <Typography variant="body1" sx={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
-              No properties listed on the platform.
-            </Typography>
-          </Box>
-        ) : (
-          <TableContainer component={Paper} sx={{ borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
-            <Table>
-              <TableHead sx={{ bgcolor: 'rgba(0,0,0,0.02)' }}>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: '600' }}>Property Details</TableCell>
-                  <TableCell sx={{ fontWeight: '600' }}>Landlord Details</TableCell>
-                  <TableCell sx={{ fontWeight: '600' }}>Type</TableCell>
-                  <TableCell sx={{ fontWeight: '600' }}>Monthly Rent</TableCell>
-                  <TableCell sx={{ fontWeight: '600' }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: '600' }}>Action</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {properties.map((property) => (
-                  <TableRow key={property._id} hover>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        {property.Images && property.Images.length > 0 ? (
-                          <img 
-                            src={`http://localhost:5000${property.Images[0]}`} 
-                            alt={property.Title} 
-                            style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px' }}
-                          />
-                        ) : (
-                          <Box sx={{ width: '60px', height: '40px', bgcolor: '#E2E8F0', borderRadius: '4px' }} />
-                        )}
-                        <div>
-                          <Typography variant="body2" sx={{ fontWeight: '600' }}>
-                            {property.Title}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Location: {property.Location}
-                          </Typography>
-                        </div>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" sx={{ fontWeight: '600' }}>
-                        {property.OwnerID?.Name || 'Deleted User'}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                        {property.OwnerID?.Email}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>{property.PropertyType}</TableCell>
-                    <TableCell>${property.RentAmount}/mo</TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={property.Status} 
-                        size="small" 
-                        color={property.Status === 'Available' ? 'success' : 'error'}
-                        sx={{ fontWeight: '600' }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <IconButton 
-                        onClick={() => handleDeleteListing(property._id)}
-                        color="error"
-                        size="small"
-                      >
-                        <Delete fontSize="small" />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
-      </Container>
+          {loading ? (
+            <div className="text-center py-5">
+              <div className="spinner-border text-success" role="status" />
+            </div>
+          ) : properties.length === 0 ? (
+            <div className="text-center py-5 rounded" style={{ border: '1px dashed var(--border)', backgroundColor: 'var(--bg-secondary)' }}>
+              <p className="text-muted m-0 italic" style={{ fontSize: '0.85rem' }}>No properties listed on the platform.</p>
+            </div>
+          ) : (
+            <div 
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                border: '1px solid var(--border)',
+                borderRadius: '16px',
+                overflow: 'hidden'
+              }}
+            >
+              <div className="table-responsive">
+                <table className="table m-0">
+                  <thead>
+                    <tr style={{ backgroundColor: 'rgba(255,255,255,0.01)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <th className="p-3 border-0">Property Details</th>
+                      <th className="p-3 border-0">Landlord Details</th>
+                      <th className="p-3 border-0">Type</th>
+                      <th className="p-3 border-0">Monthly Rent</th>
+                      <th className="p-3 border-0">Status</th>
+                      <th className="p-3 border-0 text-end">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {properties.map((property) => (
+                      <tr key={property._id} style={{ verticalAlign: 'middle' }}>
+                        <td className="p-3">
+                          <div className="d-flex align-items-center gap-3">
+                            {property.Images && property.Images.length > 0 ? (
+                              <img 
+                                src={`http://localhost:5000${property.Images[0]}`} 
+                                alt={property.Title} 
+                                style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--border)' }}
+                              />
+                            ) : (
+                              <div style={{ width: '60px', height: '40px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '6px', border: '1px solid var(--border)' }} />
+                            )}
+                            <div>
+                              <span className="d-block" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                                {property.Title}
+                              </span>
+                              <span className="text-muted" style={{ fontSize: '0.7rem' }}>
+                                Location: {property.Location}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-3">
+                          <span className="d-block" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                            {property.OwnerID?.Name || 'Deleted User'}
+                          </span>
+                          <span className="text-muted d-block" style={{ fontSize: '0.7rem' }}>
+                            {property.OwnerID?.Email}
+                          </span>
+                        </td>
+                        <td className="p-3" style={{ fontSize: '0.85rem' }}>{property.PropertyType}</td>
+                        <td className="p-3" style={{ fontSize: '0.85rem' }}>${property.RentAmount}/mo</td>
+                        <td className="p-3">
+                          <span className={`status-badge ${property.Status.toLowerCase()}`}>
+                            {property.Status}
+                          </span>
+                        </td>
+                        <td className="p-3 text-end">
+                          <button 
+                            onClick={() => handleDeleteListing(property._id)}
+                            className="btn btn-sm btn-outline-danger p-1"
+                            style={{ display: 'inline-flex', borderRadius: '4px' }}
+                          >
+                            <Delete style={{ fontSize: '16px' }} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </>
   );
 };

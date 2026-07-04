@@ -3,30 +3,17 @@ import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '../../common/Navbar';
 import { useToast } from '../../common/Toast';
 import api from '../../../utils/api';
-import {
-  Container,
-  Grid,
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
-  Chip,
-  CircularProgress,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
-  IconButton
-} from '@mui/material';
-import { Delete, History, Search, Analytics, School, DirectionsBus, Security, Shield } from '@mui/icons-material';
+import { motion } from 'framer-motion';
+import { 
+  Delete, 
+  History, 
+  Search, 
+  Analytics, 
+  School, 
+  DirectionsBus, 
+  Security, 
+  Apartment 
+} from '@mui/icons-material';
 import moment from 'moment';
 
 const RenterHome = () => {
@@ -46,22 +33,17 @@ const RenterHome = () => {
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      // 1. Fetch Tenant Bookings
       const bookingsRes = await api.get('/bookings');
       setBookings(bookingsRes.data);
 
-      // 2. Fetch Saved Searches
       const searchesRes = await api.get('/users/saved-searches');
       setSavedSearches(searchesRes.data);
 
-      // 3. Fetch View History
       const historyRes = await api.get('/bookings/history');
       setViewHistory(historyRes.data);
 
-      // 4. Fetch All properties to derive local market trends (avg rent per location)
       const propertiesRes = await api.get('/properties');
       deriveMarketTrends(propertiesRes.data);
-
     } catch (error) {
       console.error('Error fetching renter dashboard data:', error);
       showToast('Error loading dashboard data', 'error');
@@ -94,7 +76,6 @@ const RenterHome = () => {
     try {
       await api.put(`/bookings/${id}/cancel`);
       showToast('Booking cancelled successfully', 'success');
-      // Reload bookings
       const response = await api.get('/bookings');
       setBookings(response.data);
     } catch (error) {
@@ -104,7 +85,7 @@ const RenterHome = () => {
   };
 
   const handleDeleteSavedSearch = async (searchId, e) => {
-    e.stopPropagation(); // Avoid triggering search click
+    e.stopPropagation();
     try {
       await api.delete(`/users/saved-searches/${searchId}`);
       showToast('Saved search deleted', 'success');
@@ -116,7 +97,6 @@ const RenterHome = () => {
   };
 
   const handleApplySavedSearch = (query) => {
-    // Build query params
     const params = new URLSearchParams();
     Object.keys(query).forEach(key => {
       if (query[key]) {
@@ -126,279 +106,303 @@ const RenterHome = () => {
     navigate(`/renter/properties?${params.toString()}`);
   };
 
-  const getStatusChipColor = (status) => {
-    switch (status) {
-      case 'Confirmed':
-        return 'success';
-      case 'Cancelled':
-        return 'error';
-      default:
-        return 'warning';
-    }
-  };
-
   return (
     <>
       <Navbar />
-      <Container sx={{ py: 5 }}>
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: '800' }}>
-            Tenant Dashboard
-          </Typography>
-          <Typography variant="body1" sx={{ color: 'var(--text-muted)' }}>
-            Track your rental inquiries, saved searches, and local rent trends.
-          </Typography>
-        </Box>
+      <div style={{ backgroundColor: 'var(--bg-primary)', minHeight: 'calc(100vh - 64px)', padding: '40px 0' }}>
+        <div className="container">
+          {/* Header */}
+          <div className="mb-5">
+            <h1 style={{ fontWeight: 700, fontSize: '2rem', letterSpacing: '-0.02em', margin: '0 0 6px 0' }}>
+              Tenant Dashboard
+            </h1>
+            <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.85rem' }}>
+              Track your rental inquiries, saved searches, and local rent trends.
+            </p>
+          </div>
 
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-            <CircularProgress color="primary" />
-          </Box>
-        ) : (
-          <Grid container spacing={4}>
-            {/* Main Content Area */}
-            <Grid item xs={12} lg={8}>
-              {/* My Booking Inquiries */}
-              <Card sx={{ borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', mb: 4, boxShadow: 'var(--shadow-sm)' }}>
-                <Box sx={{ p: 3, borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="h6" sx={{ fontWeight: '700' }}>
-                    My Inquiries & Bookings
-                  </Typography>
-                  <Button component={Link} to="/renter/properties" variant="contained" size="small" sx={{ bgcolor: 'var(--primary-color)', textTransform: 'none', fontWeight: '600' }}>
-                    Browse Properties
-                  </Button>
-                </Box>
-                <CardContent sx={{ p: 0 }}>
-                  {bookings.length === 0 ? (
-                    <Box sx={{ p: 4, textAlign: 'center' }}>
-                      <Typography variant="body1" sx={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                        You have not submitted any inquiries yet.
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <TableContainer component={Paper} elevation={0}>
-                      <Table>
-                        <TableHead sx={{ bgcolor: 'rgba(0,0,0,0.02)' }}>
-                          <TableRow>
-                            <TableCell sx={{ fontWeight: '600' }}>Property</TableCell>
-                            <TableCell sx={{ fontWeight: '600' }}>Rent</TableCell>
-                            <TableCell sx={{ fontWeight: '600' }}>Dates</TableCell>
-                            <TableCell sx={{ fontWeight: '600' }}>Status</TableCell>
-                            <TableCell sx={{ fontWeight: '600' }}>Action</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {bookings.map((booking) => (
-                            <TableRow key={booking._id} hover>
-                              <TableCell>
-                                <Typography variant="body2" sx={{ fontWeight: '600' }}>
-                                  {booking.PropertyID?.Title || 'N/A'}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                  {booking.PropertyID?.Location}
-                                </Typography>
-                              </TableCell>
-                              <TableCell>${booking.PropertyID?.RentAmount}/mo</TableCell>
-                              <TableCell>
-                                <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
-                                  {moment(booking.StartDate).format('DD MMM YYYY')} to
-                                </Typography>
-                                <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
-                                  {moment(booking.EndDate).format('DD MMM YYYY')}
-                                </Typography>
-                              </TableCell>
-                              <TableCell>
-                                <Chip 
-                                  label={booking.Status} 
-                                  size="small" 
-                                  color={getStatusChipColor(booking.Status)}
-                                  sx={{ fontWeight: '600' }}
-                                />
-                              </TableCell>
-                              <TableCell>
-                                {booking.Status === 'Pending' ? (
-                                  <Button 
-                                    color="error" 
-                                    size="small" 
-                                    onClick={() => handleCancelBooking(booking._id)}
-                                    sx={{ textTransform: 'none', fontWeight: '600' }}
-                                  >
-                                    Cancel
-                                  </Button>
-                                ) : (
-                                  <Typography variant="body2" color="text.secondary">-</Typography>
-                                )}
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  )}
-                </CardContent>
-              </Card>
+          {loading ? (
+            <div className="text-center py-5">
+              <div className="spinner-border text-success" role="status" />
+            </div>
+          ) : (
+            <div className="row g-4">
+              {/* Left Column: Bookings & Trends */}
+              <div className="col-12 col-lg-8">
+                {/* Bookings Card */}
+                <div 
+                  className="mb-4"
+                  style={{
+                    backgroundColor: 'var(--bg-secondary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '16px',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <div className="p-4 d-flex justify-content-between align-items-center" style={{ borderBottom: '1px solid var(--border)' }}>
+                    <h2 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0 }}>My Inquiries & Bookings</h2>
+                    <Link to="/renter/properties" className="btn-househunt-primary py-2 px-3" style={{ fontSize: '0.75rem' }}>
+                      Browse Properties
+                    </Link>
+                  </div>
+                  
+                  <div className="p-0">
+                    {bookings.length === 0 ? (
+                      <div className="text-center py-5">
+                        <p className="text-muted m-0 italic" style={{ fontSize: '0.85rem' }}>You have not submitted any inquiries yet.</p>
+                      </div>
+                    ) : (
+                      <div className="table-responsive">
+                        <table className="table m-0">
+                          <thead>
+                            <tr style={{ backgroundColor: 'rgba(255,255,255,0.01)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                              <th className="p-3 border-0">Property</th>
+                              <th className="p-3 border-0">Rent</th>
+                              <th className="p-3 border-0">Dates</th>
+                              <th className="p-3 border-0">Status</th>
+                              <th className="p-3 border-0 text-end">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {bookings.map((booking) => (
+                              <tr key={booking._id} style={{ verticalAlign: 'middle' }}>
+                                <td className="p-3">
+                                  <span className="d-block" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                                    {booking.PropertyID?.Title || 'N/A'}
+                                  </span>
+                                  <span className="text-muted" style={{ fontSize: '0.7rem' }}>
+                                    {booking.PropertyID?.Location}
+                                  </span>
+                                </td>
+                                <td className="p-3" style={{ fontSize: '0.85rem' }}>
+                                  ${booking.PropertyID?.RentAmount}/mo
+                                </td>
+                                <td className="p-3" style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                                  {moment(booking.StartDate).format('DD MMM YYYY')} to {moment(booking.EndDate).format('DD MMM YYYY')}
+                                </td>
+                                <td className="p-3">
+                                  <span className={`status-badge ${booking.Status.toLowerCase()}`}>
+                                    {booking.Status}
+                                  </span>
+                                </td>
+                                <td className="p-3 text-end">
+                                  {booking.Status === 'Pending' ? (
+                                    <button 
+                                      onClick={() => handleCancelBooking(booking._id)}
+                                      className="btn btn-sm btn-outline-danger"
+                                      style={{ fontSize: '0.7rem', padding: '4px 10px', textTransform: 'none' }}
+                                    >
+                                      Cancel
+                                    </button>
+                                  ) : (
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>-</span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-              {/* Market Insights & Local Trends */}
-              <Card sx={{ borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)', mb: 4 }}>
-                <Box sx={{ p: 3, borderBottom: '1px solid var(--border-color)' }}>
-                  <Typography variant="h6" sx={{ fontWeight: '700', display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Analytics color="primary" /> Market Insights & Rent Trends
-                  </Typography>
-                </Box>
-                <CardContent>
-                  <Typography variant="body2" sx={{ mb: 3 }}>
+                {/* Market Trends Card */}
+                <div 
+                  className="mb-4"
+                  style={{
+                    backgroundColor: 'var(--bg-secondary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '16px',
+                    padding: '24px'
+                  }}
+                >
+                  <h2 style={{ fontSize: '1.1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                    <Analytics style={{ color: 'var(--accent)', fontSize: '20px' }} />
+                    Market Insights & Rent Trends
+                  </h2>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '24px' }}>
                     Average rental rates calculated directly from listings available in each area:
-                  </Typography>
+                  </p>
                   
                   {marketTrends.length === 0 ? (
-                    <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'var(--text-muted)' }}>
-                      No trend data available.
-                    </Typography>
+                    <p className="text-muted m-0 italic" style={{ fontSize: '0.85rem' }}>No trend data available.</p>
                   ) : (
-                    <Grid container spacing={2}>
-                      {marketTrends.map((trend, i) => (
-                        <Grid item xs={12} sm={6} key={i}>
-                          <Box sx={{ p: 2.5, bgcolor: '#F1F5F9', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
-                            <Typography variant="subtitle2" sx={{ color: 'var(--text-muted)', fontWeight: '600' }}>
-                              {trend.location}
-                            </Typography>
-                            <Typography variant="h4" sx={{ fontWeight: '800', color: 'var(--primary-color)', my: 0.5 }}>
-                              ${trend.avgRent} <span style={{ fontSize: '1rem', fontWeight: '500', color: 'var(--text-muted)' }}>/ mo average</span>
-                            </Typography>
-                            <Typography variant="caption" sx={{ color: 'var(--text-muted)' }}>
-                              Based on {trend.count} listing(s)
-                            </Typography>
-                          </Box>
-                        </Grid>
-                      ))}
-                    </Grid>
-                  )}
-
-                  <Divider sx={{ my: 4 }} />
-                  
-                  <Typography variant="h6" sx={{ fontWeight: '700', mb: 2, fontSize: '1rem' }}>
-                    Neighborhood Safety & Services
-                  </Typography>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={4}>
-                      <Box sx={{ p: 2, textAlign: 'center', bgcolor: 'rgba(15, 23, 42, 0.02)', borderRadius: 'var(--radius-sm)', border: '1px dashed var(--border-color)' }}>
-                        <School sx={{ fontSize: 32, color: 'var(--text-muted)', mb: 1 }} />
-                        <Typography variant="body2" sx={{ fontWeight: '600', color: 'var(--text-main)' }}>Local Schools</Typography>
-                        <Chip label="Coming Soon" size="small" variant="outlined" sx={{ mt: 1, height: '20px', fontSize: '0.65rem' }} />
-                      </Box>
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                      <Box sx={{ p: 2, textAlign: 'center', bgcolor: 'rgba(15, 23, 42, 0.02)', borderRadius: 'var(--radius-sm)', border: '1px dashed var(--border-color)' }}>
-                        <DirectionsBus sx={{ fontSize: 32, color: 'var(--text-muted)', mb: 1 }} />
-                        <Typography variant="body2" sx={{ fontWeight: '600', color: 'var(--text-main)' }}>Public Transport</Typography>
-                        <Chip label="Coming Soon" size="small" variant="outlined" sx={{ mt: 1, height: '20px', fontSize: '0.65rem' }} />
-                      </Box>
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                      <Box sx={{ p: 2, textAlign: 'center', bgcolor: 'rgba(15, 23, 42, 0.02)', borderRadius: 'var(--radius-sm)', border: '1px dashed var(--border-color)' }}>
-                        <Security sx={{ fontSize: 32, color: 'var(--text-muted)', mb: 1 }} />
-                        <Typography variant="body2" sx={{ fontWeight: '600', color: 'var(--text-main)' }}>Crime Stats</Typography>
-                        <Chip label="Coming Soon" size="small" variant="outlined" sx={{ mt: 1, height: '20px', fontSize: '0.65rem' }} />
-                      </Box>
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            {/* Sidebar Columns (Saved Searches & Viewing History) */}
-            <Grid item xs={12} lg={4}>
-              {/* Saved Searches */}
-              <Card sx={{ borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', mb: 4, boxShadow: 'var(--shadow-sm)' }}>
-                <Box sx={{ p: 3, borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Search color="primary" />
-                  <Typography variant="h6" sx={{ fontWeight: '700' }}>
-                    Saved Searches
-                  </Typography>
-                </Box>
-                <CardContent sx={{ p: 0 }}>
-                  {savedSearches.length === 0 ? (
-                    <Box sx={{ p: 3, textAlign: 'center' }}>
-                      <Typography variant="body2" sx={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                        No saved searches yet.
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <List sx={{ py: 0 }}>
-                      {savedSearches.map((search) => (
-                        <React.Fragment key={search._id}>
-                          <ListItem 
-                            button
-                            onClick={() => handleApplySavedSearch(search.query)}
-                            secondaryAction={
-                              <IconButton edge="end" onClick={(e) => handleDeleteSavedSearch(search._id, e)} color="error" size="small">
-                                <Delete fontSize="small" />
-                              </IconButton>
-                            }
-                            sx={{ py: 2 }}
+                    <div className="row g-3">
+                      {marketTrends.map((trend, idx) => (
+                        <div className="col-12 col-sm-6" key={idx}>
+                          <div 
+                            style={{
+                              padding: '20px',
+                              backgroundColor: 'var(--bg-tertiary)',
+                              border: '1px solid var(--border)',
+                              borderRadius: '8px'
+                            }}
                           >
-                            <ListItemText 
-                              primary={search.name} 
-                              secondary={Object.keys(search.query || {}).map(k => `${k}: ${search.query[k]}`).join(', ') || 'All Locations'}
-                              primaryTypographyProps={{ fontWeight: '600', fontSize: '0.95rem' }}
-                              secondaryTypographyProps={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}
-                            />
-                          </ListItem>
-                          <Divider />
-                        </React.Fragment>
+                            <span className="text-muted d-block" style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                              {trend.location}
+                            </span>
+                            <span className="d-block" style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', margin: '4px 0' }}>
+                              ${trend.avgRent} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)' }}>/mo avg</span>
+                            </span>
+                            <span className="text-muted" style={{ fontSize: '0.65rem' }}>
+                              Based on {trend.count} listing(s)
+                            </span>
+                          </div>
+                        </div>
                       ))}
-                    </List>
+                    </div>
                   )}
-                </CardContent>
-              </Card>
 
-              {/* Viewing History */}
-              <Card sx={{ borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
-                <Box sx={{ p: 3, borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <History color="primary" />
-                  <Typography variant="h6" sx={{ fontWeight: '700' }}>
-                    Recently Viewed
-                  </Typography>
-                </Box>
-                <CardContent sx={{ p: 0 }}>
-                  {viewHistory.length === 0 ? (
-                    <Box sx={{ p: 3, textAlign: 'center' }}>
-                      <Typography variant="body2" sx={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                        No viewing history found.
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <List sx={{ py: 0 }}>
-                      {viewHistory.map((item, index) => {
-                        const prop = item.PropertyID;
-                        if (!prop) return null;
-                        return (
-                          <React.Fragment key={index}>
-                            <ListItem 
-                              button
-                              component={Link}
-                              to={`/renter/properties?info=${prop._id}`}
-                              sx={{ py: 2 }}
+                  <hr style={{ borderColor: 'var(--border)', margin: '32px 0' }} />
+
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '16px' }}>
+                    Neighborhood Safety & Services
+                  </h3>
+                  
+                  <div className="row g-3">
+                    <div className="col-4">
+                      <div className="p-3 text-center rounded" style={{ backgroundColor: 'rgba(255,255,255,0.01)', border: '1px dashed var(--border)' }}>
+                        <School style={{ fontSize: '24px', color: 'var(--text-muted)', marginBottom: '6px' }} />
+                        <span className="d-block" style={{ fontSize: '0.75rem', fontWeight: 600 }}>Schools</span>
+                        <span className="badge mt-2" style={{ fontSize: '0.55rem', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>Soon</span>
+                      </div>
+                    </div>
+                    <div className="col-4">
+                      <div className="p-3 text-center rounded" style={{ backgroundColor: 'rgba(255,255,255,0.01)', border: '1px dashed var(--border)' }}>
+                        <DirectionsBus style={{ fontSize: '24px', color: 'var(--text-muted)', marginBottom: '6px' }} />
+                        <span className="d-block" style={{ fontSize: '0.75rem', fontWeight: 600 }}>Transit</span>
+                        <span className="badge mt-2" style={{ fontSize: '0.55rem', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>Soon</span>
+                      </div>
+                    </div>
+                    <div className="col-4">
+                      <div className="p-3 text-center rounded" style={{ backgroundColor: 'rgba(255,255,255,0.01)', border: '1px dashed var(--border)' }}>
+                        <Security style={{ fontSize: '24px', color: 'var(--text-muted)', marginBottom: '6px' }} />
+                        <span className="d-block" style={{ fontSize: '0.75rem', fontWeight: 600 }}>Safety</span>
+                        <span className="badge mt-2" style={{ fontSize: '0.55rem', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>Soon</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Saved Searches & History */}
+              <div className="col-12 col-lg-4">
+                {/* Saved Searches */}
+                <div 
+                  className="mb-4"
+                  style={{
+                    backgroundColor: 'var(--bg-secondary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '16px',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <div className="p-4 d-flex align-items-center gap-2" style={{ borderBottom: '1px solid var(--border)' }}>
+                    <Search style={{ color: 'var(--accent)', fontSize: '20px' }} />
+                    <h2 style={{ fontSize: '1rem', fontWeight: 600, margin: 0 }}>Saved Searches</h2>
+                  </div>
+                  
+                  <div>
+                    {savedSearches.length === 0 ? (
+                      <div className="text-center py-4">
+                        <p className="text-muted m-0 italic" style={{ fontSize: '0.8rem' }}>No saved searches yet.</p>
+                      </div>
+                    ) : (
+                      <div className="list-group list-group-flush" style={{ backgroundColor: 'transparent' }}>
+                        {savedSearches.map((search) => (
+                          <div 
+                            key={search._id}
+                            onClick={() => handleApplySavedSearch(search.query)}
+                            className="list-group-item d-flex justify-content-between align-items-center p-3"
+                            style={{
+                              backgroundColor: 'transparent',
+                              borderBottom: '1px solid var(--border)',
+                              cursor: 'pointer',
+                              transition: 'background-color 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                          >
+                            <div className="flex-grow-1 min-w-0 pr-3">
+                              <span className="d-block" style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                                {search.name}
+                              </span>
+                              <span className="text-muted text-truncate d-block" style={{ fontSize: '0.7rem' }}>
+                                {Object.keys(search.query || {}).map(k => `${k}: ${search.query[k]}`).join(', ') || 'All Locations'}
+                              </span>
+                            </div>
+                            <button 
+                              onClick={(e) => handleDeleteSavedSearch(search._id, e)}
+                              className="btn btn-link text-danger p-1"
+                              style={{ display: 'inline-flex' }}
                             >
-                              <ListItemText 
-                                primary={prop.Title} 
-                                secondary={`${prop.Location} • $${prop.RentAmount}/mo`}
-                                primaryTypographyProps={{ fontWeight: '600', fontSize: '0.9rem' }}
-                                secondaryTypographyProps={{ fontSize: '0.75rem' }}
-                              />
-                            </ListItem>
-                            <Divider />
-                          </React.Fragment>
-                        );
-                      })}
-                    </List>
-                  )}
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        )}
-      </Container>
+                              <Delete style={{ fontSize: '18px' }} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Viewing History */}
+                <div 
+                  className="mb-4"
+                  style={{
+                    backgroundColor: 'var(--bg-secondary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '16px',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <div className="p-4 d-flex align-items-center gap-2" style={{ borderBottom: '1px solid var(--border)' }}>
+                    <History style={{ color: 'var(--accent)', fontSize: '20px' }} />
+                    <h2 style={{ fontSize: '1rem', fontWeight: 600, margin: 0 }}>Recently Viewed</h2>
+                  </div>
+                  
+                  <div>
+                    {viewHistory.length === 0 ? (
+                      <div className="text-center py-4">
+                        <p className="text-muted m-0 italic" style={{ fontSize: '0.8rem' }}>No viewing history found.</p>
+                      </div>
+                    ) : (
+                      <div className="list-group list-group-flush" style={{ backgroundColor: 'transparent' }}>
+                        {viewHistory.slice(0, 5).map((item, idx) => {
+                          const prop = item.PropertyID;
+                          if (!prop) return null;
+                          return (
+                            <Link 
+                              key={idx}
+                              to={`/renter/properties?info=${prop._id}`}
+                              className="list-group-item p-3 text-decoration-none"
+                              style={{
+                                backgroundColor: 'transparent',
+                                borderBottom: '1px solid var(--border)',
+                                display: 'block',
+                                transition: 'background-color 0.2s'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                            >
+                              <span className="d-block" style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                                {prop.Title}
+                              </span>
+                              <span className="text-muted d-block" style={{ fontSize: '0.7rem' }}>
+                                {prop.Location} • ${prop.RentAmount}/mo
+                              </span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </>
   );
 };

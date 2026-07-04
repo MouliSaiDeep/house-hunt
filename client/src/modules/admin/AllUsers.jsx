@@ -2,22 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../common/Navbar';
 import { useToast } from '../common/Toast';
 import api from '../../utils/api';
-import {
-  Container,
-  Box,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
-  Chip,
-  CircularProgress,
-  IconButton
-} from '@mui/material';
 import { Delete, ToggleOn, ToggleOff, AccountCircle } from '@mui/icons-material';
 
 const AllUsers = () => {
@@ -25,7 +9,14 @@ const AllUsers = () => {
   const [loading, setLoading] = useState(false);
   
   const { showToast } = useToast();
-  const currentAdmin = JSON.parse(localStorage.getItem('user') || '{}');
+  const currentAdmin = (() => {
+    try {
+      const u = localStorage.getItem('user');
+      return u && u !== 'undefined' ? JSON.parse(u) : {};
+    } catch (e) {
+      return {};
+    }
+  })();
 
   useEffect(() => {
     fetchUsers();
@@ -51,7 +42,6 @@ const AllUsers = () => {
     try {
       await api.put(`/admin/approve-owner/${user._id}`);
       showToast(`Owner approval updated successfully`, 'success');
-      // Reload users list
       fetchUsers();
     } catch (error) {
       console.error(error);
@@ -80,115 +70,117 @@ const AllUsers = () => {
   return (
     <>
       <Navbar />
-      <Container sx={{ py: 5 }}>
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: '800' }}>
-            System Users
-          </Typography>
-          <Typography variant="body1" sx={{ color: 'var(--text-muted)' }}>
-            Review, approve owner credentials, or deactivate user accounts.
-          </Typography>
-        </Box>
+      <div style={{ backgroundColor: 'var(--bg-primary)', minHeight: 'calc(100vh - 64px)', padding: '40px 0' }}>
+        <div className="container">
+          {/* Header */}
+          <div className="mb-5">
+            <h1 style={{ fontWeight: 700, fontSize: '2rem', letterSpacing: '-0.02em', margin: '0 0 6px 0' }}>
+              System Users
+            </h1>
+            <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.85rem' }}>
+              Review, approve owner credentials, or deactivate user accounts.
+            </p>
+          </div>
 
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-            <CircularProgress color="primary" />
-          </Box>
-        ) : (
-          <TableContainer component={Paper} sx={{ borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
-            <Table>
-              <TableHead sx={{ bgcolor: 'rgba(0,0,0,0.02)' }}>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: '600' }}>User Profile</TableCell>
-                  <TableCell sx={{ fontWeight: '600' }}>Email</TableCell>
-                  <TableCell sx={{ fontWeight: '600' }}>Phone</TableCell>
-                  <TableCell sx={{ fontWeight: '600' }}>Role Type</TableCell>
-                  <TableCell sx={{ fontWeight: '600' }}>Owner Status</TableCell>
-                  <TableCell sx={{ fontWeight: '600' }}>Verify Action</TableCell>
-                  <TableCell sx={{ fontWeight: '600' }}>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user._id} hover>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        {user.ProfileImage ? (
-                          <img 
-                            src={`http://localhost:5000${user.ProfileImage}`} 
-                            alt={user.Name} 
-                            style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '50%' }}
-                          />
-                        ) : (
-                          <AccountCircle sx={{ fontSize: '40px', color: 'var(--text-muted)' }} />
-                        )}
-                        <div>
-                          <Typography variant="body2" sx={{ fontWeight: '600' }}>
-                            {user.Name}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Location: {user.CurrentLocation || 'N/A'}
-                          </Typography>
-                        </div>
-                      </Box>
-                    </TableCell>
-                    <TableCell>{user.Email}</TableCell>
-                    <TableCell>{user.Phone}</TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={user.UserType} 
-                        size="small"
-                        sx={{ 
-                          bgcolor: user.UserType === 'Admin' ? 'var(--primary-color)' : user.UserType === 'Owner' ? 'var(--accent-light)' : '#E2E8F0',
-                          color: user.UserType === 'Admin' ? 'white' : user.UserType === 'Owner' ? 'var(--accent-hover)' : 'var(--text-main)',
-                          fontWeight: '600'
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {user.UserType === 'Owner' ? (
-                        <Chip 
-                          label={user.isApproved ? 'Approved' : 'Pending'} 
-                          size="small"
-                          color={user.isApproved ? 'success' : 'warning'}
-                          sx={{ fontWeight: '600' }}
-                        />
-                      ) : (
-                        <Typography variant="caption" color="text.secondary">N/A (Auto-approved)</Typography>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {user.UserType === 'Owner' ? (
-                        <Button
-                          size="small"
-                          startIcon={user.isApproved ? <ToggleOn /> : <ToggleOff />}
-                          onClick={() => handleToggleApproval(user)}
-                          color={user.isApproved ? 'success' : 'warning'}
-                          sx={{ textTransform: 'none', fontWeight: '600' }}
-                        >
-                          {user.isApproved ? 'Revoke Approval' : 'Approve Owner'}
-                        </Button>
-                      ) : (
-                        <Typography variant="body2" color="text.secondary">-</Typography>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <IconButton 
-                        onClick={() => handleDeleteUser(user._id)}
-                        disabled={user._id === currentAdmin._id}
-                        color="error"
-                        size="small"
-                      >
-                        <Delete fontSize="small" />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
-      </Container>
+          {loading ? (
+            <div className="text-center py-5">
+              <div className="spinner-border text-success" role="status" />
+            </div>
+          ) : (
+            <div 
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                border: '1px solid var(--border)',
+                borderRadius: '16px',
+                overflow: 'hidden'
+              }}
+            >
+              <div className="table-responsive">
+                <table className="table m-0">
+                  <thead>
+                    <tr style={{ backgroundColor: 'rgba(255,255,255,0.01)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <th className="p-3 border-0">User Profile</th>
+                      <th className="p-3 border-0">Email</th>
+                      <th className="p-3 border-0">Phone</th>
+                      <th className="p-3 border-0">Role Type</th>
+                      <th className="p-3 border-0">Owner Status</th>
+                      <th className="p-3 border-0">Verify Action</th>
+                      <th className="p-3 border-0 text-end">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((user) => (
+                      <tr key={user._id} style={{ verticalAlign: 'middle' }}>
+                        <td className="p-3">
+                          <div className="d-flex align-items-center gap-3">
+                            {user.ProfileImage ? (
+                              <img 
+                                src={`http://localhost:5000${user.ProfileImage}`} 
+                                alt={user.Name} 
+                                style={{ width: '36px', height: '36px', objectFit: 'cover', borderRadius: '50%', border: '1px solid var(--border)' }}
+                              />
+                            ) : (
+                              <AccountCircle style={{ fontSize: '36px', color: 'var(--text-muted)' }} />
+                            )}
+                            <div>
+                              <span className="d-block" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                                {user.Name}
+                              </span>
+                              <span className="text-muted" style={{ fontSize: '0.7rem' }}>
+                                Location: {user.CurrentLocation || 'N/A'}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-3" style={{ fontSize: '0.85rem' }}>{user.Email}</td>
+                        <td className="p-3" style={{ fontSize: '0.85rem' }}>{user.Phone}</td>
+                        <td className="p-3">
+                          <span className={`status-badge ${user.UserType.toLowerCase()}`}>
+                            {user.UserType}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          {user.UserType === 'Owner' ? (
+                            <span className={`status-badge ${user.isApproved ? 'confirmed' : 'pending'}`}>
+                              {user.isApproved ? 'Approved' : 'Pending'}
+                            </span>
+                          ) : (
+                            <span className="text-muted" style={{ fontSize: '0.75rem' }}>N/A (Auto-approved)</span>
+                          )}
+                        </td>
+                        <td className="p-3">
+                          {user.UserType === 'Owner' ? (
+                            <button
+                              onClick={() => handleToggleApproval(user)}
+                              className="btn btn-sm text-decoration-none d-inline-flex align-items-center gap-1 p-0 text-success"
+                              style={{ fontSize: '0.8rem', fontWeight: 600, border: 'none', background: 'transparent' }}
+                            >
+                              {user.isApproved ? <ToggleOn style={{ fontSize: '24px' }} /> : <ToggleOff style={{ fontSize: '24px', color: 'var(--text-muted)' }} />}
+                              {user.isApproved ? 'Revoke Approval' : 'Approve Owner'}
+                            </button>
+                          ) : (
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>-</span>
+                          )}
+                        </td>
+                        <td className="p-3 text-end">
+                          <button 
+                            onClick={() => handleDeleteUser(user._id)}
+                            disabled={user._id === currentAdmin._id}
+                            className="btn btn-sm btn-outline-danger p-1"
+                            style={{ display: 'inline-flex', borderRadius: '4px' }}
+                          >
+                            <Delete style={{ fontSize: '16px' }} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </>
   );
 };
